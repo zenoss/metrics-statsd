@@ -26,6 +26,7 @@ import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
@@ -54,19 +55,19 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
         DatagramPacket newPacket(ByteArrayOutputStream out);
     }
 
-    public StatsdReporter(String host, int port) throws IOException {
+    public StatsdReporter(String host, int port) {
         this(Metrics.defaultRegistry(), host, port, null);
     }
 
-    public StatsdReporter(String host, int port, String prefix) throws IOException {
+    public StatsdReporter(String host, int port, String prefix) {
         this(Metrics.defaultRegistry(), host, port, prefix);
     }
 
-    public StatsdReporter(MetricsRegistry metricsRegistry, String host, int port) throws IOException {
+    public StatsdReporter(MetricsRegistry metricsRegistry, String host, int port) {
         this(metricsRegistry, host, port, null);
     }
 
-    public StatsdReporter(MetricsRegistry metricsRegistry, String host, int port, String prefix) throws IOException {
+    public StatsdReporter(MetricsRegistry metricsRegistry, String host, int port, String prefix) {
         this(metricsRegistry,
              prefix,
              MetricPredicate.ALL,
@@ -74,15 +75,15 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
              Clock.defaultClock());
     }
 
-    public StatsdReporter(MetricsRegistry metricsRegistry, String prefix, MetricPredicate predicate, UDPSocketProvider socketProvider, Clock clock) throws IOException {
+    public StatsdReporter(MetricsRegistry metricsRegistry, String prefix, MetricPredicate predicate, UDPSocketProvider socketProvider, Clock clock) {
         this(metricsRegistry, prefix, predicate, socketProvider, clock, VirtualMachineMetrics.getInstance());
     }
 
-    public StatsdReporter(MetricsRegistry metricsRegistry, String prefix, MetricPredicate predicate, UDPSocketProvider socketProvider, Clock clock, VirtualMachineMetrics vm) throws IOException {
+    public StatsdReporter(MetricsRegistry metricsRegistry, String prefix, MetricPredicate predicate, UDPSocketProvider socketProvider, Clock clock, VirtualMachineMetrics vm) {
         this(metricsRegistry, prefix, predicate, socketProvider, clock, vm, "statsd-reporter");
     }
 
-    public StatsdReporter(MetricsRegistry metricsRegistry, String prefix, MetricPredicate predicate, UDPSocketProvider socketProvider, Clock clock, VirtualMachineMetrics vm, String name) throws IOException {
+    public StatsdReporter(MetricsRegistry metricsRegistry, String prefix, MetricPredicate predicate, UDPSocketProvider socketProvider, Clock clock, VirtualMachineMetrics vm, String name) {
         super(metricsRegistry, name);
 
         this.socketProvider = socketProvider;
@@ -212,7 +213,7 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
     }
 
     @Override
-    public void processMeter(MetricName name, Metered meter, Long epoch) throws Exception {
+    public void processMeter(MetricName name, Metered meter, Long epoch) {
         final String sanitizedName = sanitizeName(name);
         sendInt(sanitizedName + ".count", StatType.GAUGE, meter.count());
         sendFloat(sanitizedName + ".meanRate", StatType.TIMER, meter.meanRate());
@@ -222,19 +223,19 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
     }
 
     @Override
-    public void processCounter(MetricName name, Counter counter, Long epoch) throws Exception {
+    public void processCounter(MetricName name, Counter counter, Long epoch) {
         sendInt(sanitizeName(name) + ".count", StatType.GAUGE, counter.count());
     }
 
     @Override
-    public void processHistogram(MetricName name, Histogram histogram, Long epoch) throws Exception {
+    public void processHistogram(MetricName name, Histogram histogram, Long epoch) {
         final String sanitizedName = sanitizeName(name);
         sendSummarizable(sanitizedName, histogram);
         sendSampling(sanitizedName, histogram);
     }
 
     @Override
-    public void processTimer(MetricName name, Timer timer, Long epoch) throws Exception {
+    public void processTimer(MetricName name, Timer timer, Long epoch) {
         processMeter(name, timer, epoch);
         final String sanitizedName = sanitizeName(name);
         sendSummarizable(sanitizedName, timer);
@@ -242,18 +243,18 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
     }
 
     @Override
-    public void processGauge(MetricName name, Gauge<?> gauge, Long epoch) throws Exception {
+    public void processGauge(MetricName name, Gauge<?> gauge, Long epoch) {
         sendObj(sanitizeName(name) + ".count", StatType.GAUGE, gauge.value());
     }
 
-    protected void sendSummarizable(String sanitizedName, Summarizable metric) throws IOException {
+    protected void sendSummarizable(String sanitizedName, Summarizable metric) {
         sendFloat(sanitizedName + ".min", StatType.TIMER, metric.min());
         sendFloat(sanitizedName + ".max", StatType.TIMER, metric.max());
         sendFloat(sanitizedName + ".mean", StatType.TIMER, metric.mean());
         sendFloat(sanitizedName + ".stddev", StatType.TIMER, metric.stdDev());
     }
 
-    protected void sendSampling(String sanitizedName, Sampling metric) throws IOException {
+    protected void sendSampling(String sanitizedName, Sampling metric) {
         final Snapshot snapshot = metric.getSnapshot();
         sendFloat(sanitizedName + ".median", StatType.TIMER, snapshot.getMedian());
         sendFloat(sanitizedName + ".75percentile", StatType.TIMER, snapshot.get75thPercentile());
@@ -337,7 +338,7 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
         }
 
         @Override
-        public DatagramSocket get() throws Exception {
+        public DatagramSocket get() throws SocketException {
             return new DatagramSocket();
         }
 
