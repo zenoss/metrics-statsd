@@ -33,9 +33,6 @@ import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
 public class StatsdReporter extends AbstractPollingReporter implements MetricProcessor<Long> {
-
-    public static enum StatType { COUNTER, TIMER, GAUGE }
-
     private static final Logger LOG = LoggerFactory.getLogger(StatsdReporter.class);
 
     protected final String prefix;
