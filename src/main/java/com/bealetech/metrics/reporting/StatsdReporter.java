@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -47,6 +48,7 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
 
     private boolean prependNewline = false;
     private boolean printVMMetrics = true;
+		private StatsdSerializer serializer;
 
     public interface UDPSocketProvider {
         DatagramSocket get() throws Exception;
@@ -115,6 +117,7 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
             outputData.reset();
             prependNewline = false;
             writer = new BufferedWriter(new OutputStreamWriter(this.outputData));
+	        serializer = new StatsdSerializer(prefix, writer);
 
             final long epoch = clock.time() / 1000;
             if (this.printVMMetrics) {
@@ -150,48 +153,48 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
 
     protected void printVmMetrics(long epoch) {
         // Memory
-        sendFloat("jvm.memory.totalInit", StatType.GAUGE, vm.totalInit());
-        sendFloat("jvm.memory.totalUsed", StatType.GAUGE, vm.totalUsed());
-        sendFloat("jvm.memory.totalMax", StatType.GAUGE, vm.totalMax());
-        sendFloat("jvm.memory.totalCommitted", StatType.GAUGE, vm.totalCommitted());
+        serializer.writeGauge("jvm.memory.totalInit", vm.totalInit());
+        serializer.writeGauge("jvm.memory.totalUsed", vm.totalUsed());
+        serializer.writeGauge("jvm.memory.totalMax", vm.totalMax());
+        serializer.writeGauge("jvm.memory.totalCommitted", vm.totalCommitted());
 
-        sendFloat("jvm.memory.heapInit", StatType.GAUGE, vm.heapInit());
-        sendFloat("jvm.memory.heapUsed", StatType.GAUGE, vm.heapUsed());
-        sendFloat("jvm.memory.heapMax", StatType.GAUGE, vm.heapMax());
-        sendFloat("jvm.memory.heapCommitted", StatType.GAUGE, vm.heapCommitted());
+        serializer.writeGauge("jvm.memory.heapInit", vm.heapInit());
+        serializer.writeGauge("jvm.memory.heapUsed", vm.heapUsed());
+        serializer.writeGauge("jvm.memory.heapMax", vm.heapMax());
+        serializer.writeGauge("jvm.memory.heapCommitted", vm.heapCommitted());
 
-        sendFloat("jvm.memory.heapUsage", StatType.GAUGE, vm.heapUsage());
-        sendFloat("jvm.memory.nonHeapUsage", StatType.GAUGE, vm.nonHeapUsage());
+        serializer.writeGauge("jvm.memory.heapUsage", vm.heapUsage());
+        serializer.writeGauge("jvm.memory.nonHeapUsage", vm.nonHeapUsage());
 
         for (Map.Entry<String, Double> pool : vm.memoryPoolUsage().entrySet()) {
-            sendFloat("jvm.memory.memory_pool_usages." + sanitizeString(pool.getKey()), StatType.GAUGE, pool.getValue());
+            serializer.writeGauge("jvm.memory.memory_pool_usages." + sanitizeString(pool.getKey()), pool.getValue());
         }
 
         // Buffer Pool
         final Map<String, VirtualMachineMetrics.BufferPoolStats> bufferPoolStats = vm.getBufferPoolStats();
         if (!bufferPoolStats.isEmpty()) {
-            sendFloat("jvm.buffers.direct.count", StatType.GAUGE, bufferPoolStats.get("direct").getCount());
-            sendFloat("jvm.buffers.direct.memoryUsed", StatType.GAUGE, bufferPoolStats.get("direct").getMemoryUsed());
-            sendFloat("jvm.buffers.direct.totalCapacity", StatType.GAUGE, bufferPoolStats.get("direct").getTotalCapacity());
+            serializer.writeGauge("jvm.buffers.direct.count", bufferPoolStats.get("direct").getCount());
+            serializer.writeGauge("jvm.buffers.direct.memoryUsed", bufferPoolStats.get("direct").getMemoryUsed());
+            serializer.writeGauge("jvm.buffers.direct.totalCapacity", bufferPoolStats.get("direct").getTotalCapacity());
 
-            sendFloat("jvm.buffers.mapped.count", StatType.GAUGE, bufferPoolStats.get("mapped").getCount());
-            sendFloat("jvm.buffers.mapped.memoryUsed", StatType.GAUGE, bufferPoolStats.get("mapped").getMemoryUsed());
-            sendFloat("jvm.buffers.mapped.totalCapacity", StatType.GAUGE, bufferPoolStats.get("mapped").getTotalCapacity());
+            serializer.writeGauge("jvm.buffers.mapped.count", bufferPoolStats.get("mapped").getCount());
+            serializer.writeGauge("jvm.buffers.mapped.memoryUsed", bufferPoolStats.get("mapped").getMemoryUsed());
+            serializer.writeGauge("jvm.buffers.mapped.totalCapacity", bufferPoolStats.get("mapped").getTotalCapacity());
         }
 
-        sendInt("jvm.daemon_thread_count", StatType.GAUGE, vm.daemonThreadCount());
-        sendInt("jvm.thread_count", StatType.GAUGE, vm.threadCount());
-        sendInt("jvm.uptime", StatType.GAUGE, vm.uptime());
-        sendFloat("jvm.fd_usage", StatType.GAUGE, vm.fileDescriptorUsage());
+        serializer.writeGauge("jvm.daemon_thread_count", vm.daemonThreadCount());
+        serializer.writeGauge("jvm.thread_count", vm.threadCount());
+        serializer.writeGauge("jvm.uptime", vm.uptime());
+        serializer.writeGauge("jvm.fd_usage", vm.fileDescriptorUsage());
 
         for (Map.Entry<Thread.State, Double> entry : vm.threadStatePercentages().entrySet()) {
-            sendFloat("jvm.thread-states." + entry.getKey().toString().toLowerCase(), StatType.GAUGE, entry.getValue());
+            serializer.writeGauge("jvm.thread-states." + entry.getKey().toString().toLowerCase(), entry.getValue());
         }
 
         for (Map.Entry<String, VirtualMachineMetrics.GarbageCollectorStats> entry : vm.garbageCollectors().entrySet()) {
             final String name = "jvm.gc." + sanitizeString(entry.getKey());
-            sendInt(name + ".time", StatType.GAUGE, entry.getValue().getTime(TimeUnit.MILLISECONDS));
-            sendInt(name + ".runs", StatType.GAUGE, entry.getValue().getRuns());
+            serializer.writeGauge(name + ".time", entry.getValue().getTime(TimeUnit.MILLISECONDS));
+            serializer.writeGauge(name + ".runs", entry.getValue().getRuns());
         }
     }
 
@@ -213,16 +216,16 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
     @Override
     public void processMeter(MetricName name, Metered meter, Long epoch) {
         final String sanitizedName = sanitizeName(name);
-        sendInt(sanitizedName + ".count", StatType.GAUGE, meter.count());
-        sendFloat(sanitizedName + ".meanRate", StatType.TIMER, meter.meanRate());
-        sendFloat(sanitizedName + ".1MinuteRate", StatType.TIMER, meter.oneMinuteRate());
-        sendFloat(sanitizedName + ".5MinuteRate", StatType.TIMER, meter.fiveMinuteRate());
-        sendFloat(sanitizedName + ".15MinuteRate", StatType.TIMER, meter.fifteenMinuteRate());
+        serializer.writeGauge(sanitizedName + ".count", meter.count());
+        serializer.writeTimer(sanitizedName + ".meanRate", meter.meanRate());
+        serializer.writeTimer(sanitizedName + ".1MinuteRate", meter.oneMinuteRate());
+        serializer.writeTimer(sanitizedName + ".5MinuteRate", meter.fiveMinuteRate());
+        serializer.writeTimer(sanitizedName + ".15MinuteRate", meter.fifteenMinuteRate());
     }
 
     @Override
     public void processCounter(MetricName name, Counter counter, Long epoch) {
-        sendInt(sanitizeName(name) + ".count", StatType.GAUGE, counter.count());
+        serializer.writeGauge(sanitizeName(name) + ".count", counter.count());
     }
 
     @Override
@@ -242,37 +245,31 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
 
     @Override
     public void processGauge(MetricName name, Gauge<?> gauge, Long epoch) {
-        sendObj(sanitizeName(name) + ".count", StatType.GAUGE, gauge.value());
+        Object value = gauge.value();
+        if (value instanceof Double || value instanceof Float || value instanceof BigDecimal) {
+            serializer.writeGauge(sanitizeName(name) + ".count", ((Number) value).doubleValue());
+        } else if (value instanceof Number) {
+            serializer.writeGauge(sanitizeName(name) + ".count", ((Number) value).longValue());
+        } else {
+            serializer.writeGauge(sanitizeName(name) + ".count", value.toString());
+        }
     }
 
     protected void sendSummarizable(String sanitizedName, Summarizable metric) {
-        sendFloat(sanitizedName + ".min", StatType.TIMER, metric.min());
-        sendFloat(sanitizedName + ".max", StatType.TIMER, metric.max());
-        sendFloat(sanitizedName + ".mean", StatType.TIMER, metric.mean());
-        sendFloat(sanitizedName + ".stddev", StatType.TIMER, metric.stdDev());
+        serializer.writeTimer(sanitizedName + ".min", metric.min());
+        serializer.writeTimer(sanitizedName + ".max", metric.max());
+        serializer.writeTimer(sanitizedName + ".mean", metric.mean());
+        serializer.writeTimer(sanitizedName + ".stddev", metric.stdDev());
     }
 
     protected void sendSampling(String sanitizedName, Sampling metric) {
         final Snapshot snapshot = metric.getSnapshot();
-        sendFloat(sanitizedName + ".median", StatType.TIMER, snapshot.getMedian());
-        sendFloat(sanitizedName + ".75percentile", StatType.TIMER, snapshot.get75thPercentile());
-        sendFloat(sanitizedName + ".95percentile", StatType.TIMER, snapshot.get95thPercentile());
-        sendFloat(sanitizedName + ".98percentile", StatType.TIMER, snapshot.get98thPercentile());
-        sendFloat(sanitizedName + ".99percentile", StatType.TIMER, snapshot.get99thPercentile());
-        sendFloat(sanitizedName + ".999percentile", StatType.TIMER, snapshot.get999thPercentile());
-    }
-
-
-    protected void sendInt(String name, StatType statType, long value) {
-        sendData(name, String.format(locale, "%d", value), statType);
-    }
-
-    protected void sendFloat(String name, StatType statType, double value) {
-        sendData(name, String.format(locale, "%2.2f", value), statType);
-    }
-
-    protected void sendObj(String name, StatType statType, Object value) {
-        sendData(name, String.format(locale, "%s", value), statType);
+        serializer.writeTimer(sanitizedName + ".median", snapshot.getMedian());
+        serializer.writeTimer(sanitizedName + ".75percentile", snapshot.get75thPercentile());
+        serializer.writeTimer(sanitizedName + ".95percentile", snapshot.get95thPercentile());
+        serializer.writeTimer(sanitizedName + ".98percentile", snapshot.get98thPercentile());
+        serializer.writeTimer(sanitizedName + ".99percentile", snapshot.get99thPercentile());
+        serializer.writeTimer(sanitizedName + ".999percentile", snapshot.get999thPercentile());
     }
 
     protected String sanitizeName(MetricName name) {
@@ -290,39 +287,6 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
 
     protected String sanitizeString(String s) {
         return s.replace(' ', '-');
-    }
-
-    protected void sendData(String name, String value, StatType statType) {
-        String statTypeStr = "";
-        switch (statType) {
-            case COUNTER:
-                statTypeStr = "c";
-                break;
-            case GAUGE:
-                statTypeStr = "g";
-                break;
-            case TIMER:
-                statTypeStr = "ms";
-                break;
-        }
-
-        try {
-            if (prependNewline) {
-                writer.write("\n");
-            }
-            if (!prefix.isEmpty()) {
-                writer.write(prefix);
-            }
-            writer.write(sanitizeString(name));
-            writer.write(":");
-            writer.write(value);
-            writer.write("|");
-            writer.write(statTypeStr);
-            prependNewline = true;
-            writer.flush();
-        } catch (IOException e) {
-            LOG.error("Error sending to StatsD:", e);
-        }
     }
 
     public static class DefaultSocketProvider implements UDPSocketProvider {

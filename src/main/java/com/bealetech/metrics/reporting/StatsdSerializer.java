@@ -16,40 +16,48 @@
  */
 package com.bealetech.metrics.reporting;
 
-import com.yammer.metrics.core.MetricName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Locale;
 
 public class StatsdSerializer {
 	private static final Logger LOG = LoggerFactory.getLogger(StatsdSerializer.class);
 
-	private final Locale locale;
 	private final String prefix;
 	private final Writer writer;
 
 	private boolean prependNewline;
 
 	public StatsdSerializer(String metricPrefix, Writer writer) {
-		this.locale = Locale.US;
 		this.prefix = metricPrefix;
 		this.writer = writer;
 		this.prependNewline = false;
 	}
 
 	public void writeGauge(String metricName, long value) {
-		//TODO bounds checking
-		writeData(metricName, Long.toString(value, 10), StatType.GAUGE);
+		writeGauge(metricName, Long.toString(value, 10));
+	}
+
+	public void writeGauge(String metricName, double value) {
+		writeGauge(metricName, String.format("%2.2f", value));
+	}
+
+	public void writeGauge(String metricName, String value) {
+		writeData(metricName, value, StatType.GAUGE);
 	}
 
 	//TODO counters
 
 	public void writeTimer(String metricName, long timeInMS) {
-		//TODO bounds checking
+		//TODO bounds checking?
 		writeData(metricName, Long.toString(timeInMS, 10), StatType.TIMER);
+	}
+
+	public void writeTimer(String metricName, double value) {
+		//TODO bounds checking?
+		writeData(metricName, String.format("%2.2f", value), StatType.TIMER);
 	}
 
 	private String sanitizeString(String s) {
