@@ -47,7 +47,7 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
     protected ByteArrayOutputStream outputData;
 
     private boolean printVMMetrics = true;
-		private StatsdSerializer serializer;
+        private StatsdSerializer serializer;
 
     public interface UDPSocketProvider {
         DatagramSocket get() throws Exception;
@@ -115,7 +115,7 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
             socket = this.socketProvider.get();
             outputData.reset();
             writer = new BufferedWriter(new OutputStreamWriter(this.outputData));
-	        serializer = new StatsdSerializer(prefix, writer);
+            serializer = new StatsdSerializer(prefix, writer);
 
             final long epoch = clock.time() / 1000;
             if (this.printVMMetrics) {
