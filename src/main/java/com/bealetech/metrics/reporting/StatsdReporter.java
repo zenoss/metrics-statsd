@@ -46,7 +46,6 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
     protected Writer writer;
     protected ByteArrayOutputStream outputData;
 
-    private boolean prependNewline = false;
     private boolean printVMMetrics = true;
 		private StatsdSerializer serializer;
 
@@ -115,7 +114,6 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
         try {
             socket = this.socketProvider.get();
             outputData.reset();
-            prependNewline = false;
             writer = new BufferedWriter(new OutputStreamWriter(this.outputData));
 	        serializer = new StatsdSerializer(prefix, writer);
 
@@ -167,7 +165,7 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
         serializer.writeGauge("jvm.memory.nonHeapUsage", vm.nonHeapUsage());
 
         for (Map.Entry<String, Double> pool : vm.memoryPoolUsage().entrySet()) {
-            serializer.writeGauge("jvm.memory.memory_pool_usages." + sanitizeString(pool.getKey()), pool.getValue());
+            serializer.writeGauge("jvm.memory.memory_pool_usages." + pool.getKey(), pool.getValue());
         }
 
         // Buffer Pool
@@ -192,7 +190,7 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
         }
 
         for (Map.Entry<String, VirtualMachineMetrics.GarbageCollectorStats> entry : vm.garbageCollectors().entrySet()) {
-            final String name = "jvm.gc." + sanitizeString(entry.getKey());
+            final String name = "jvm.gc." + entry.getKey();
             serializer.writeGauge(name + ".time", entry.getValue().getTime(TimeUnit.MILLISECONDS));
             serializer.writeGauge(name + ".runs", entry.getValue().getRuns());
         }
@@ -283,10 +281,6 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
                     .append('.');
         }
         return sb.append(name.getName()).toString();
-    }
-
-    protected String sanitizeString(String s) {
-        return s.replace(' ', '-');
     }
 
     public static class DefaultSocketProvider implements UDPSocketProvider {

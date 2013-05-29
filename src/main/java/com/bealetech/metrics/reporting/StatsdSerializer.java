@@ -45,7 +45,7 @@ public class StatsdSerializer {
 	}
 
 	public void writeGauge(String metricName, String value) {
-		writeData(metricName, value, StatType.GAUGE);
+		writeData(metricName, sanitizeString(value), StatType.GAUGE);
 	}
 
 	//TODO counters
