@@ -44,7 +44,7 @@ public class StatsdSerializer {
         writeGauge(metricName, String.format("%2.2f", value));
     }
 
-    public void writeGauge(String metricName, String value) {
+    private void writeGauge(String metricName, String value) {
         writeData(metricName, sanitizeString(value), StatType.GAUGE);
     }
 

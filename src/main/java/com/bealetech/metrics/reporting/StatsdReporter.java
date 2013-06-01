@@ -249,7 +249,9 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
         } else if (value instanceof Number) {
             serializer.writeGauge(sanitizeName(name) + ".count", ((Number) value).longValue());
         } else {
-            serializer.writeGauge(sanitizeName(name) + ".count", value.toString());
+            LOG.warn("Cannot serialize non-numeric guage {} with value {} for statsd",
+                gauge,
+                gauge.value());
         }
     }
 
