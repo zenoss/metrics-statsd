@@ -4,7 +4,7 @@ Statsd reporter for codahale/metrics 3.0+
 
 ## Gradle
 
-com.readytalk:metrics-statsd
+    "com.readytalk:metrics-statsd:${metrics-statsd.version}"
 
 ## Maven
 
