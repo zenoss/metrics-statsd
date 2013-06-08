@@ -215,7 +215,7 @@ public class StatsdReporterTest {
                         return createGauge();
                     }
                 },
-                expectedGaugeResult(value));
+                "");
     }
 
     static Counter createCounter(long count) throws Exception {
