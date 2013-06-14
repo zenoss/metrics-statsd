@@ -1,30 +1,30 @@
 # metrics-statsd
 
-Statsd reporter for codahale/metrics.
+StatsD reporter for codahale/metrics. Supports versions 2 and 3.
 
 ## Quick Start
 
 ```java
-MetricsRegistry registry = new MetricsRegistry();
-StatsdReporter reporter = new StatsdReporter(registry, "statsd.example.com", 8125);
-reporter.start(15, TimeUnit.SECONDS);
+MetricRegistry registry = new MetricRegistry();
+StatsDReporter.forRegistry(registry)
+    .build(new StatsD(new InetSocketAddress("statsd.example.com", 8125)))
+    .start(1, TimeUnit.MINUTES);
 ```
 
-## Dependency
+## Gradle
 
-```xml
-<dependencies>
-    <dependency>
-        <groupId>com.readytalk</groupId>
-        <artifactId>metrics3-statsd</artifactId>
-        <version>${metrics-statsd.version}</version>
-    </dependency>
-</dependencies>
+```groovy
+repositories {
+  mavenRepo(url: 'http://dl.bintray.com/readytalk/maven')
+}
+
+compile('com.readytalk:metrics3-statsd:3.X.X')
 ```
-# License
 
-Copyright (c) 2012-2013 Sean Laurent
+## Maven
 
-Published under Apache Software License 2.0, see LICENSE
+Instructions for including metrics-statsd into a maven project can be found on the [bintray repository](https://bintray.com/readytalk/maven/metrics-statsd).
+
+## Credits
 
 This is based off of Sean Laurent's [metrics-statsd](https://github.com/organicveggie/metrics-statsd) and the graphite module of [Coda Hale's Metrics](https://github.com/codahale/metrics)
