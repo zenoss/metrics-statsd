@@ -3,7 +3,7 @@ package com.readytalk.metrics;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.SortedMap;
@@ -40,8 +40,6 @@ public class StatsDReporterTest {
 		inOrder.verify(statsD).connect();
 		inOrder.verify(statsD, never()).send("prefix.gauge", "value");
 		inOrder.verify(statsD).close();
-
-		verifyNoMoreInteractions(statsD);
 	}
 
 	@Test
@@ -53,8 +51,6 @@ public class StatsDReporterTest {
 		inOrder.verify(statsD).connect();
 		inOrder.verify(statsD).send("prefix.gauge", "1");
 		inOrder.verify(statsD).close();
-
-		verifyNoMoreInteractions(statsD);
 	}
 
 	@Test
@@ -66,8 +62,6 @@ public class StatsDReporterTest {
 		inOrder.verify(statsD).connect();
 		inOrder.verify(statsD).send("prefix.gauge", "1");
 		inOrder.verify(statsD).close();
-
-		verifyNoMoreInteractions(statsD);
 	}
 
 	@Test
@@ -79,8 +73,6 @@ public class StatsDReporterTest {
 		inOrder.verify(statsD).connect();
 		inOrder.verify(statsD).send("prefix.gauge", "1");
 		inOrder.verify(statsD).close();
-
-		verifyNoMoreInteractions(statsD);
 	}
 
 	@Test
@@ -92,8 +84,6 @@ public class StatsDReporterTest {
 		inOrder.verify(statsD).connect();
 		inOrder.verify(statsD).send("prefix.gauge", "1");
 		inOrder.verify(statsD).close();
-
-		verifyNoMoreInteractions(statsD);
 	}
 
 	@Test
@@ -105,8 +95,6 @@ public class StatsDReporterTest {
 		inOrder.verify(statsD).connect();
 		inOrder.verify(statsD).send("prefix.gauge", "1.10");
 		inOrder.verify(statsD).close();
-
-		verifyNoMoreInteractions(statsD);
 	}
 
 	@Test
@@ -118,8 +106,6 @@ public class StatsDReporterTest {
 		inOrder.verify(statsD).connect();
 		inOrder.verify(statsD).send("prefix.gauge", "1.10");
 		inOrder.verify(statsD).close();
-
-		verifyNoMoreInteractions(statsD);
 	}
 
 	@Test
@@ -134,8 +120,6 @@ public class StatsDReporterTest {
 		inOrder.verify(statsD).connect();
 		inOrder.verify(statsD).send("prefix.counter.count", "100");
 		inOrder.verify(statsD).close();
-
-		verifyNoMoreInteractions(statsD);
 	}
 
 	@Test
@@ -161,21 +145,21 @@ public class StatsDReporterTest {
 				this.<Meter>map(), this.<Timer>map());
 
 		final InOrder inOrder = inOrder(statsD);
-		inOrder.verify(statsD).connect();
-		inOrder.verify(statsD).send("prefix.histogram.count", "1");
-		inOrder.verify(statsD).send("prefix.histogram.max", "2");
-		inOrder.verify(statsD).send("prefix.histogram.mean", "3.00");
-		inOrder.verify(statsD).send("prefix.histogram.min", "4");
-		inOrder.verify(statsD).send("prefix.histogram.stddev", "5.00");
-		inOrder.verify(statsD).send("prefix.histogram.p50", "6.00");
-		inOrder.verify(statsD).send("prefix.histogram.p75", "7.00");
-		inOrder.verify(statsD).send("prefix.histogram.p95", "8.00");
-		inOrder.verify(statsD).send("prefix.histogram.p98", "9.00");
-		inOrder.verify(statsD).send("prefix.histogram.p99", "10.00");
-		inOrder.verify(statsD).send("prefix.histogram.p999", "11.00");
-		inOrder.verify(statsD).close();
 
-		verifyNoMoreInteractions(statsD);
+		inOrder.verify(statsD).connect();
+		verify(statsD).send("prefix.histogram.count", "1");
+		verify(statsD).send("prefix.histogram.max", "2");
+		verify(statsD).send("prefix.histogram.mean", "3.00");
+		verify(statsD).send("prefix.histogram.min", "4");
+		verify(statsD).send("prefix.histogram.stddev", "5.00");
+		verify(statsD).send("prefix.histogram.p50", "6.00");
+		verify(statsD).send("prefix.histogram.p75", "7.00");
+		verify(statsD).send("prefix.histogram.p95", "8.00");
+		verify(statsD).send("prefix.histogram.p98", "9.00");
+		verify(statsD).send("prefix.histogram.p99", "10.00");
+		inOrder.verify(statsD).send("prefix.histogram.p999", "11.00");
+
+		inOrder.verify(statsD).close();
 	}
 
 	@Test
@@ -192,14 +176,14 @@ public class StatsDReporterTest {
 
 		final InOrder inOrder = inOrder(statsD);
 		inOrder.verify(statsD).connect();
-		inOrder.verify(statsD).send("prefix.meter.count", "1");
-		inOrder.verify(statsD).send("prefix.meter.m1_rate", "2.00");
-		inOrder.verify(statsD).send("prefix.meter.m5_rate", "3.00");
-		inOrder.verify(statsD).send("prefix.meter.m15_rate", "4.00");
+		verify(statsD).send("prefix.meter.count", "1");
+		verify(statsD).send("prefix.meter.m1_rate", "2.00");
+		verify(statsD).send("prefix.meter.m5_rate", "3.00");
+		verify(statsD).send("prefix.meter.m15_rate", "4.00");
 		inOrder.verify(statsD).send("prefix.meter.mean_rate", "5.00");
 		inOrder.verify(statsD).close();
 
-		verifyNoMoreInteractions(statsD);
+
 	}
 
 	@Test
@@ -230,24 +214,24 @@ public class StatsDReporterTest {
 
 		final InOrder inOrder = inOrder(statsD);
 		inOrder.verify(statsD).connect();
-		inOrder.verify(statsD).send("prefix.timer.max", "100.00");
-		inOrder.verify(statsD).send("prefix.timer.mean", "200.00");
-		inOrder.verify(statsD).send("prefix.timer.min", "300.00");
-		inOrder.verify(statsD).send("prefix.timer.stddev", "400.00");
-		inOrder.verify(statsD).send("prefix.timer.p50", "500.00");
-		inOrder.verify(statsD).send("prefix.timer.p75", "600.00");
-		inOrder.verify(statsD).send("prefix.timer.p95", "700.00");
-		inOrder.verify(statsD).send("prefix.timer.p98", "800.00");
-		inOrder.verify(statsD).send("prefix.timer.p99", "900.00");
-		inOrder.verify(statsD).send("prefix.timer.p999", "1000.00");
-		inOrder.verify(statsD).send("prefix.timer.count", "1");
-		inOrder.verify(statsD).send("prefix.timer.m1_rate", "3.00");
-		inOrder.verify(statsD).send("prefix.timer.m5_rate", "4.00");
-		inOrder.verify(statsD).send("prefix.timer.m15_rate", "5.00");
+		verify(statsD).send("prefix.timer.max", "100.00");
+		verify(statsD).send("prefix.timer.mean", "200.00");
+		verify(statsD).send("prefix.timer.min", "300.00");
+		verify(statsD).send("prefix.timer.stddev", "400.00");
+		verify(statsD).send("prefix.timer.p50", "500.00");
+		verify(statsD).send("prefix.timer.p75", "600.00");
+		verify(statsD).send("prefix.timer.p95", "700.00");
+		verify(statsD).send("prefix.timer.p98", "800.00");
+		verify(statsD).send("prefix.timer.p99", "900.00");
+		verify(statsD).send("prefix.timer.p999", "1000.00");
+		verify(statsD).send("prefix.timer.count", "1");
+		verify(statsD).send("prefix.timer.m1_rate", "3.00");
+		verify(statsD).send("prefix.timer.m5_rate", "4.00");
+		verify(statsD).send("prefix.timer.m15_rate", "5.00");
 		inOrder.verify(statsD).send("prefix.timer.mean_rate", "2.00");
 		inOrder.verify(statsD).close();
 
-		verifyNoMoreInteractions(statsD);
+
 	}
 
 	private <T> SortedMap<String, T> map() {

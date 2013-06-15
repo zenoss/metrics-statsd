@@ -1,5 +1,6 @@
 package com.readytalk.metrics;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A client to a StatsD server.
  */
+@NotThreadSafe
 public class StatsD implements Closeable {
 
 	private static final Logger LOG = LoggerFactory.getLogger(StatsD.class);
@@ -33,7 +35,7 @@ public class StatsD implements Closeable {
 	 *
 	 * @param address the address of the StatsD server
 	 */
-	public StatsD(InetSocketAddress address) {
+	public StatsD(final InetSocketAddress address) {
 		this(address, new DatagramSocketFactory());
 	}
 
@@ -43,7 +45,7 @@ public class StatsD implements Closeable {
 	 * @param address the address of the Carbon server
 	 * @param socketFactory the socket factory
 	 */
-	public StatsD(InetSocketAddress address, DatagramSocketFactory socketFactory) {
+	public StatsD(final InetSocketAddress address, final DatagramSocketFactory socketFactory) {
 		this.address = address;
 		this.socketFactory = socketFactory;
 	}
@@ -54,7 +56,7 @@ public class StatsD implements Closeable {
 	 * @throws IllegalStateException if the client is already connected
 	 * @throws IOException           if there is an error connecting
 	 */
-	public void connect() throws IllegalStateException, IOException {
+	public void connect() throws IOException {
 		if (socket != null) {
 			throw new IllegalStateException("Already connected");
 		}
@@ -63,14 +65,12 @@ public class StatsD implements Closeable {
 	}
 
 	/**
-	 * Sends the given measurement to the server.
+	 * Sends the given measurement to the server. Logs exceptions.
 	 *
 	 * @param name the name of the metric
 	 * @param value the value of the metric
-	 *
-	 * @throws IOException if there was an error sending the metric
 	 */
-	public void send(String name, String value) throws IOException {
+	public void send(final String name, final String value) {
 		try {
 			String formatted = String.format("%s:%s|g", sanitize(name), sanitize(value));
 			byte[] bytes = formatted.getBytes(UTF_8);
@@ -84,8 +84,6 @@ public class StatsD implements Closeable {
 			} else {
 				LOG.debug("unable to send packet to statsd at '{}:{}'", address.getHostName(), address.getPort());
 			}
-
-			throw e;
 		}
 	}
 
@@ -106,7 +104,7 @@ public class StatsD implements Closeable {
 		this.socket = null;
 	}
 
-	protected String sanitize(String s) {
+	private String sanitize(final String s) {
 		return WHITESPACE.matcher(s).replaceAll("-");
 	}
 }
