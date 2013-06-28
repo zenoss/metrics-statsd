@@ -31,23 +31,12 @@ public class StatsD implements Closeable {
 
 	/**
 	 * Creates a new client which connects to the given address using the default {@link DatagramSocketFactory}.
-	 * <p/>
 	 *
 	 * @param host the hostname of the StatsD server.
 	 * @param port the port of the StatsD server. This is typically 8125.
 	 */
-	public StatsD(final String host, final int port) {
-		this(new InetSocketAddress(host, port));
-	}
-
-	/**
-	 * Creates a new client which connects to the given address using the default
-	 * {@link DatagramSocketFactory}.
-	 *
-	 * @param address the address of the StatsD server
-	 */
-	public StatsD(final InetSocketAddress address) {
-		this(address, new DatagramSocketFactory());
+	StatsD(final String host, final int port) {
+		this(new InetSocketAddress(host, port), new DatagramSocketFactory());
 	}
 
 	/**
@@ -56,7 +45,7 @@ public class StatsD implements Closeable {
 	 * @param address the address of the Carbon server
 	 * @param socketFactory the socket factory
 	 */
-	public StatsD(final InetSocketAddress address, final DatagramSocketFactory socketFactory) {
+	StatsD(final InetSocketAddress address, final DatagramSocketFactory socketFactory) {
 		this.address = address;
 		this.socketFactory = socketFactory;
 	}
