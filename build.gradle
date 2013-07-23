@@ -10,45 +10,27 @@ buildscript {
 defaultTasks 'build'
 
 subprojects {
-
-  apply plugin: 'java'
-  apply plugin: 'maven-publish'
-  apply plugin: 'checkstyle'
-  apply plugin: 'findbugs'
-  apply plugin: 'jacoco'
-
-  apply plugin: 'propdeps'
-  apply plugin: 'propdeps-maven'
-  apply plugin: 'propdeps-idea'
-  apply plugin: 'propdeps-eclipse'
-
+  
+  plugins.with {
+    apply 'java'
+    apply 'maven-publish'
+    apply 'checkstyle'
+    apply 'findbugs'
+    apply 'jacoco'
+    
+    apply 'propdeps'
+    apply 'propdeps-maven'
+    apply 'propdeps-idea'
+    apply 'propdeps-eclipse'
+  }
+  
   group = 'com.readytalk'
-
   description = 'Metrics StatsD Support'
-
-  sourceCompatibility = 1.6
-  targetCompatibility = 1.6
 
   repositories {
     mavenCentral()
   }
-
-  task sourceJar(type: Jar) {
-      from sourceSets.main.allJava
-  }
-
-  publishing {
-    publications {
-      mavenJava(MavenPublication) {
-        from components.java
-
-        artifact sourceJar {
-          classifier "sources"
-        }
-      }
-    }
-  }
-
+  
   dependencies {
     compile (
       'org.slf4j:slf4j-api:1.7.5',
@@ -67,9 +49,16 @@ subprojects {
     )
   }
 
+  sourceCompatibility = 1.6
+  targetCompatibility = 1.6
+
   tasks.withType(Compile) { 
     options.compilerArgs << "-Xlint:all" 
-  } 
+  }
+
+  task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+  }
 
   checkstyle {
     toolVersion = '5.6'
@@ -91,11 +80,21 @@ subprojects {
       xml.enabled = true
     } 
   }
+  
+  publishing {
+    publications {
+      mavenJava(MavenPublication) {
+        from components.java
 
-  jacocoTestReport.dependsOn(test)
-  build.dependsOn javadoc
-  build.dependsOn jacocoTestReport
+        artifact sourceJar {
+          classifier "sources"
+        }
+      }
+    }
+  }
 
+  jacocoTestReport.dependsOn test
+  build.dependsOn javadoc, jacocoTestReport
 }
 
 task wrapper(type: Wrapper) {
