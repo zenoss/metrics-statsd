@@ -1,2 +1,1 @@
-include 'metrics2-statsd'
-include 'metrics3-statsd'
+include 'metrics2-statsd', 'metrics3-statsd'
