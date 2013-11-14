@@ -16,6 +16,7 @@
  */
 package com.bealetech.metrics.reporting;
 
+import com.readytalk.metrics.statsd.StatsdSerializer;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.*;
 import com.yammer.metrics.reporting.AbstractPollingReporter;
@@ -49,7 +50,7 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
     protected ByteArrayOutputStream outputData;
 
     private boolean printVMMetrics = true;
-        private StatsdSerializer serializer;
+    private StatsdSerializer serializer;
 
     public interface UDPSocketProvider {
         DatagramSocket get() throws Exception;

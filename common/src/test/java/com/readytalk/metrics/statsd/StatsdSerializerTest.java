@@ -13,7 +13,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package com.bealetech.metrics.reporting;
+package com.readytalk.metrics.statsd;
 
 import org.junit.Assert;
 import org.junit.Before;

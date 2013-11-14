@@ -14,7 +14,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package com.bealetech.metrics.reporting;
+package com.readytalk.metrics.statsd;
 
 public enum StatType {
 	COUNTER("c"), TIMER("ms"), GAUGE("g");
