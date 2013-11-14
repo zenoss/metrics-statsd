@@ -217,7 +217,7 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
     @Override
     public void processMeter(MetricName name, Metered meter, Long epoch) {
         final String sanitizedName = sanitizeName(name);
-        serializer.writeGauge(sanitizedName + ".count", meter.count());
+        serializer.writeGauge(sanitizedName, meter.count());
         serializer.writeTimer(sanitizedName + ".meanRate", meter.meanRate());
         serializer.writeTimer(sanitizedName + ".1MinuteRate", meter.oneMinuteRate());
         serializer.writeTimer(sanitizedName + ".5MinuteRate", meter.fiveMinuteRate());
@@ -226,7 +226,7 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
 
     @Override
     public void processCounter(MetricName name, Counter counter, Long epoch) {
-        serializer.writeGauge(sanitizeName(name) + ".count", counter.count());
+        serializer.writeGauge(sanitizeName(name), counter.count());
     }
 
     @Override
@@ -248,9 +248,9 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
     public void processGauge(MetricName name, Gauge<?> gauge, Long epoch) {
         Object value = gauge.value();
         if (value instanceof Double || value instanceof Float || value instanceof BigDecimal) {
-            serializer.writeGauge(sanitizeName(name) + ".count", ((Number) value).doubleValue());
+            serializer.writeGauge(sanitizeName(name), ((Number) value).doubleValue());
         } else if (value instanceof Number) {
-            serializer.writeGauge(sanitizeName(name) + ".count", ((Number) value).longValue());
+            serializer.writeGauge(sanitizeName(name), ((Number) value).longValue());
         } else {
             LOG.warn("Cannot serialize non-numeric guage {} with value {} for statsd",
                 gauge,

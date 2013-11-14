@@ -210,7 +210,7 @@ public class StatsDReporter extends ScheduledReporter {
 	}
 
 	private void reportMetered(final String name, final Metered meter) {
-		statsD.send(prefix(name, "count"), formatNumber(meter.getCount()));
+		statsD.send(prefix(name), formatNumber(meter.getCount()));
 		statsD.send(prefix(name, "m1_rate"), formatNumber(convertRate(meter.getOneMinuteRate())));
 		statsD.send(prefix(name, "m5_rate"), formatNumber(convertRate(meter.getFiveMinuteRate())));
 		statsD.send(prefix(name, "m15_rate"), formatNumber(convertRate(meter.getFifteenMinuteRate())));
@@ -219,7 +219,7 @@ public class StatsDReporter extends ScheduledReporter {
 
 	private void reportHistogram(final String name, final Histogram histogram) {
 		final Snapshot snapshot = histogram.getSnapshot();
-		statsD.send(prefix(name, "count"), formatNumber(histogram.getCount()));
+		statsD.send(prefix(name), formatNumber(histogram.getCount()));
 		statsD.send(prefix(name, "max"), formatNumber(snapshot.getMax()));
 		statsD.send(prefix(name, "mean"), formatNumber(snapshot.getMean()));
 		statsD.send(prefix(name, "min"), formatNumber(snapshot.getMin()));
@@ -233,7 +233,7 @@ public class StatsDReporter extends ScheduledReporter {
 	}
 
 	private void reportCounter(final String name, final Counter counter) {
-		statsD.send(prefix(name, "count"), formatNumber(counter.getCount()));
+		statsD.send(prefix(name), formatNumber(counter.getCount()));
 	}
 
 	private void reportGauge(final String name, final Gauge gauge) {

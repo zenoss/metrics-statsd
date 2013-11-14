@@ -107,7 +107,7 @@ public class StatsdReporterTest {
 
     public String[] expectedTimerResult() {
         return new String[]{
-                "prefix.java.lang.Object.metric.count:1|g",
+                "prefix.java.lang.Object.metric:1|g",
                 "prefix.java.lang.Object.metric.meanRate:2.00|ms",
                 "prefix.java.lang.Object.metric.1MinuteRate:1.00|ms",
                 "prefix.java.lang.Object.metric.5MinuteRate:5.00|ms",
@@ -127,7 +127,7 @@ public class StatsdReporterTest {
 
     public String[] expectedMeterResult() {
         return new String[]{
-                "prefix.java.lang.Object.metric.count:1|g",
+                "prefix.java.lang.Object.metric:1|g",
                 "prefix.java.lang.Object.metric.meanRate:2.00|ms",
                 "prefix.java.lang.Object.metric.1MinuteRate:1.00|ms",
                 "prefix.java.lang.Object.metric.5MinuteRate:5.00|ms",
@@ -152,7 +152,7 @@ public class StatsdReporterTest {
 
     public String[] expectedCounterResult(long count) {
         return new String[]{
-                String.format("prefix.java.lang.Object.metric.count:%d|g", count)
+                String.format("prefix.java.lang.Object.metric:%d|g", count)
         };
     }
 
