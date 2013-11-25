@@ -1,5 +1,5 @@
 dependencies {
-  compile project(':common')
+  compile project(':metrics-statsd-common')
   provided (
     ['com.yammer.metrics:metrics-core:2.1.3'],
   )
