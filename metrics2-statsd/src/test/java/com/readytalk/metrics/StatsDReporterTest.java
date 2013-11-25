@@ -51,7 +51,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class StatsdReporterTest {
+public class StatsDReporterTest {
 
   private static final String METRIC_BASE_NAME = "java.lang.Object.metric";
   @Mock
@@ -73,7 +73,7 @@ public class StatsdReporterTest {
     when(clock.tick()).thenReturn(1234L);
     when(clock.time()).thenReturn(5678L);
     registry = new TestMetricsRegistry();
-    reporter = new StatsdReporter(registry,
+    reporter = new StatsDReporter(registry,
         "prefix",
         MetricPredicate.ALL,
         clock,

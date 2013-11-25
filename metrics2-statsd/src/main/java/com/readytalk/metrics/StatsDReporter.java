@@ -43,9 +43,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 
-public class StatsdReporter extends AbstractPollingReporter implements MetricProcessor<Long> {
-  private static final Logger LOG = LoggerFactory.getLogger(StatsdReporter.class);
-  private static final Charset UTF_8 = Charset.forName("UTF-8");
+public class StatsDReporter extends AbstractPollingReporter implements MetricProcessor<Long> {
+  private static final Logger LOG = LoggerFactory.getLogger(StatsDReporter.class);
 
   protected final String prefix;
   protected final MetricPredicate predicate;
@@ -54,19 +53,19 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
 
   private final StatsD statsD;
 
-  public StatsdReporter(String host, int port) {
+  public StatsDReporter(String host, int port) {
     this(Metrics.defaultRegistry(), host, port, null);
   }
 
-  public StatsdReporter(String host, int port, String prefix) {
+  public StatsDReporter(String host, int port, String prefix) {
     this(Metrics.defaultRegistry(), host, port, prefix);
   }
 
-  public StatsdReporter(MetricsRegistry metricsRegistry, String host, int port) {
+  public StatsDReporter(MetricsRegistry metricsRegistry, String host, int port) {
     this(metricsRegistry, host, port, null);
   }
 
-  public StatsdReporter(MetricsRegistry metricsRegistry, String host, int port, String prefix) {
+  public StatsDReporter(MetricsRegistry metricsRegistry, String host, int port, String prefix) {
     this(metricsRegistry,
         prefix,
         MetricPredicate.ALL,
@@ -74,15 +73,15 @@ public class StatsdReporter extends AbstractPollingReporter implements MetricPro
         new StatsD(host, port));
   }
 
-  public StatsdReporter(MetricsRegistry metricsRegistry, String prefix, MetricPredicate predicate, Clock clock, StatsD statsD) {
+  public StatsDReporter(MetricsRegistry metricsRegistry, String prefix, MetricPredicate predicate, Clock clock, StatsD statsD) {
     this(metricsRegistry, prefix, predicate, clock, VirtualMachineMetrics.getInstance(), statsD);
   }
 
-  public StatsdReporter(MetricsRegistry metricsRegistry, String prefix, MetricPredicate predicate, Clock clock, VirtualMachineMetrics vm, StatsD statsD) {
+  public StatsDReporter(MetricsRegistry metricsRegistry, String prefix, MetricPredicate predicate, Clock clock, VirtualMachineMetrics vm, StatsD statsD) {
     this(metricsRegistry, prefix, predicate, clock, vm, "statsd-reporter", statsD);
   }
 
-  public StatsdReporter(MetricsRegistry metricsRegistry, String prefix, MetricPredicate predicate, Clock clock, VirtualMachineMetrics vm, String name, StatsD statsD) {
+  public StatsDReporter(MetricsRegistry metricsRegistry, String prefix, MetricPredicate predicate, Clock clock, VirtualMachineMetrics vm, String name, StatsD statsD) {
     super(metricsRegistry, name);
 
     this.vm = vm;
