@@ -17,15 +17,15 @@
 package com.readytalk.metrics.statsd;
 
 public enum StatType {
-	COUNTER("c"), TIMER("ms"), GAUGE("g");
+  COUNTER("c"), TIMER("ms"), GAUGE("g");
 
-	private final String statsdType;
+  private final String statsdType;
 
-	private StatType(String statsdType) {
-		this.statsdType = statsdType;
-	}
+  private StatType(String statsdType) {
+    this.statsdType = statsdType;
+  }
 
-	public String statsdType() {
-		return statsdType;
-	}
+  public String statsdType() {
+    return statsdType;
+  }
 }

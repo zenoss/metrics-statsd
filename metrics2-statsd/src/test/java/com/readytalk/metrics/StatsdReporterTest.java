@@ -54,271 +54,274 @@ import static org.mockito.Mockito.when;
 public class StatsdReporterTest {
 
   private static final String METRIC_BASE_NAME = "java.lang.Object.metric";
-  @Mock private Clock clock;
-    @Mock private StatsD statsD;
-    private AbstractPollingReporter reporter;
-    private TestMetricsRegistry registry;
+  @Mock
+  private Clock clock;
+  @Mock
+  private StatsD statsD;
+  private AbstractPollingReporter reporter;
+  private TestMetricsRegistry registry;
 
-    protected static class TestMetricsRegistry extends MetricsRegistry {
-        public <T extends Metric> T add(MetricName name, T metric) {
-            return getOrAdd(name, metric);
-        }
+  protected static class TestMetricsRegistry extends MetricsRegistry {
+    public <T extends Metric> T add(MetricName name, T metric) {
+      return getOrAdd(name, metric);
     }
+  }
 
-    @Before
-    public void init() throws Exception {
-        MockitoAnnotations.initMocks(this);
-        when(clock.tick()).thenReturn(1234L);
-        when(clock.time()).thenReturn(5678L);
-        registry = new TestMetricsRegistry();
-        reporter = new StatsdReporter(registry,
-            "prefix",
-            MetricPredicate.ALL,
-            clock,
-            statsD);
+  @Before
+  public void init() throws Exception {
+    MockitoAnnotations.initMocks(this);
+    when(clock.tick()).thenReturn(1234L);
+    when(clock.time()).thenReturn(5678L);
+    registry = new TestMetricsRegistry();
+    reporter = new StatsdReporter(registry,
+        "prefix",
+        MetricPredicate.ALL,
+        clock,
+        statsD);
+  }
+
+  protected <T extends Metric> void addMetricAndRunReporter(Callable<T> action) throws Exception {
+    // Invoke the callable to trigger (ie, mark()/inc()/etc) and return the metric
+    final T metric = action.call();
+    try {
+      // Add the metric to the registry, run the reporter and flush the result
+      registry.add(new MetricName(Object.class, "metric"), metric);
+      reporter.run();
+    } finally {
+      reporter.shutdown();
     }
+  }
 
-    protected <T extends Metric> void addMetricAndRunReporter(Callable<T> action) throws Exception {
-        // Invoke the callable to trigger (ie, mark()/inc()/etc) and return the metric
-        final T metric = action.call();
-        try {
-            // Add the metric to the registry, run the reporter and flush the result
-            registry.add(new MetricName(Object.class, "metric"), metric);
-            reporter.run();
-        } finally {
-            reporter.shutdown();
-        }
-    }
+  private void verifySend(String metricNameSuffix, String metricValue) {
+    verify(statsD).send(METRIC_BASE_NAME + "." + metricNameSuffix, metricValue);
+  }
 
-    private void verifySend(String metricNameSuffix, String metricValue) {
-      verify(statsD).send(METRIC_BASE_NAME + "." + metricNameSuffix, metricValue);
-    }
+  private void verifySend(String metricValue) {
+    verify(statsD).send(METRIC_BASE_NAME, metricValue);
+  }
 
-    private void verifySend(String metricValue) {
-      verify(statsD).send(METRIC_BASE_NAME, metricValue);
-    }
+  public void verifyTimer() {
+    verifySend("1");
+    verifySend("meanRate", "2.00");
+    verifySend("1MinuteRate", "1.00");
+    verifySend("5MinuteRate", "5.00");
+    verifySend("15MinuteRate", "15.00");
+    verifySend("min", "1.00");
+    verifySend("max", "3.00");
+    verifySend("mean", "2.00");
+    verifySend("stddev", "1.50");
+    verifySend("median", "0.50");
+    verifySend("75percentile", "0.75");
+    verifySend("95percentile", "0.95");
+    verifySend("98percentile", "0.98");
+    verifySend("99percentile", "0.99");
+    verifySend("999percentile", "1.00");
+  }
 
-    public void verifyTimer() {
-        verifySend("1");
-        verifySend("meanRate", "2.00");
-        verifySend("1MinuteRate", "1.00");
-        verifySend("5MinuteRate", "5.00");
-        verifySend("15MinuteRate", "15.00");
-        verifySend("min", "1.00");
-        verifySend("max", "3.00");
-        verifySend("mean", "2.00");
-        verifySend("stddev", "1.50");
-        verifySend("median", "0.50");
-        verifySend("75percentile", "0.75");
-        verifySend("95percentile", "0.95");
-        verifySend("98percentile", "0.98");
-        verifySend("99percentile", "0.99");
-        verifySend("999percentile", "1.00");
-    }
+  public void verifyMeter() {
+    verifySend("1");
+    verifySend("meanRate", "2.00");
+    verifySend("1MinuteRate", "1.00");
+    verifySend("5MinuteRate", "5.00");
+    verifySend("15MinuteRate", "15.00");
+  }
 
-    public void verifyMeter() {
-      verifySend("1");
-      verifySend("meanRate", "2.00");
-      verifySend("1MinuteRate", "1.00");
-      verifySend("5MinuteRate", "5.00");
-      verifySend("15MinuteRate", "15.00");
-    }
+  public void verifyHistogram() {
+    verifySend("min", "1.00");
+    verifySend("max", "3.00");
+    verifySend("mean", "2.00");
+    verifySend("stddev", "1.50");
+    verifySend("median", "0.50");
+    verifySend("75percentile", "0.75");
+    verifySend("95percentile", "0.95");
+    verifySend("98percentile", "0.98");
+    verifySend("99percentile", "0.99");
+    verifySend("999percentile", "1.00");
+  }
 
-    public void verifyHistogram() {
-      verifySend("min", "1.00");
-      verifySend("max", "3.00");
-      verifySend("mean", "2.00");
-      verifySend("stddev", "1.50");
-      verifySend("median", "0.50");
-      verifySend("75percentile", "0.75");
-      verifySend("95percentile", "0.95");
-      verifySend("98percentile", "0.98");
-      verifySend("99percentile", "0.99");
-      verifySend("999percentile", "1.00");
-    }
+  public void verifyCounter(long count) {
+    verifySend(Long.toString(count));
+  }
 
-    public void verifyCounter(long count) {
-      verifySend(Long.toString(count));
-    }
+  @Test
+  public final void counter() throws Exception {
+    final long count = new Random().nextInt(Integer.MAX_VALUE);
+    addMetricAndRunReporter(
+        new Callable<Counter>() {
+          @Override
+          public Counter call() throws Exception {
+            return createCounter(count);
+          }
+        });
+    verifyCounter(count);
+  }
 
-    @Test
-    public final void counter() throws Exception {
-        final long count = new Random().nextInt(Integer.MAX_VALUE);
-        addMetricAndRunReporter(
-            new Callable<Counter>() {
-              @Override
-              public Counter call() throws Exception {
-                return createCounter(count);
-              }
-            });
-        verifyCounter(count);
-    }
+  @Test
+  public final void histogram() throws Exception {
+    addMetricAndRunReporter(
+        new Callable<Histogram>() {
+          @Override
+          public Histogram call() throws Exception {
+            return createHistogram();
+          }
+        });
+    verifyHistogram();
+  }
 
-    @Test
-    public final void histogram() throws Exception {
-        addMetricAndRunReporter(
-            new Callable<Histogram>() {
-              @Override
-              public Histogram call() throws Exception {
-                return createHistogram();
-              }
-            });
-        verifyHistogram();
-    }
+  @Test
+  public final void meter() throws Exception {
+    addMetricAndRunReporter(
+        new Callable<Meter>() {
+          @Override
+          public Meter call() throws Exception {
+            return createMeter();
+          }
+        });
+    verifyMeter();
+  }
 
-    @Test
-    public final void meter() throws Exception {
-        addMetricAndRunReporter(
-            new Callable<Meter>() {
-              @Override
-              public Meter call() throws Exception {
-                return createMeter();
-              }
-            });
-        verifyMeter();
-    }
+  @Test
+  public final void timer() throws Exception {
+    addMetricAndRunReporter(
+        new Callable<Timer>() {
+          @Override
+          public Timer call() throws Exception {
+            return createTimer();
+          }
+        });
+    verifyTimer();
+  }
 
-    @Test
-    public final void timer() throws Exception {
-        addMetricAndRunReporter(
-            new Callable<Timer>() {
-              @Override
-              public Timer call() throws Exception {
-                return createTimer();
-              }
-            });
-        verifyTimer();
-    }
+  @Test
+  public final void longGauge() throws Exception {
+    final long value = 0xdeadbeef;
+    addMetricAndRunReporter(
+        new Callable<Gauge<Object>>() {
+          @Override
+          public Gauge<Object> call() throws Exception {
+            return createGauge(value);
+          }
+        });
+    verifySend(Long.toString(value));
+  }
 
-    @Test
-    public final void longGauge() throws Exception {
-        final long value = 0xdeadbeef;
-        addMetricAndRunReporter(
-            new Callable<Gauge<Object>>() {
-              @Override
-              public Gauge<Object> call() throws Exception {
-                return createGauge(value);
-              }
-            });
-        verifySend(Long.toString(value));
-    }
+  @Test
+  public void stringGauge() throws Exception {
+    final String value = "The Metric";
+    addMetricAndRunReporter(
+        new Callable<Gauge<Object>>() {
+          @Override
+          public Gauge<Object> call() throws Exception {
+            return createGauge(value);
+          }
+        });
+    verify(statsD, never()).send(anyString(), anyString());
+  }
 
-    @Test
-    public void stringGauge() throws Exception {
-      final String value = "The Metric";
-      addMetricAndRunReporter(
-          new Callable<Gauge<Object>>() {
-            @Override
-            public Gauge<Object> call() throws Exception {
-              return createGauge(value);
-            }
-          });
-      verify(statsD, never()).send(anyString(), anyString());
-    }
+  static Counter createCounter(long count) throws Exception {
+    final Counter mock = mock(Counter.class);
+    when(mock.count()).thenReturn(count);
+    return configureMatcher(mock, doAnswer(new MetricsProcessorAction() {
+      @Override
+      void delegateToProcessor(MetricProcessor<Object> processor, MetricName name, Object context) throws Exception {
+        processor.processCounter(name, mock, context);
+      }
+    }));
+  }
 
-    static Counter createCounter(long count) throws Exception {
-        final Counter mock = mock(Counter.class);
-        when(mock.count()).thenReturn(count);
-        return configureMatcher(mock, doAnswer(new MetricsProcessorAction() {
-            @Override
-            void delegateToProcessor(MetricProcessor<Object> processor, MetricName name, Object context) throws Exception {
-                processor.processCounter(name, mock, context);
-            }
-        }));
-    }
-
-    static Histogram createHistogram() throws Exception {
-        final Histogram mock = mock(Histogram.class);
-        setupSummarizableMock(mock);
-        setupSamplingMock(mock);
-        return configureMatcher(mock, doAnswer(new MetricsProcessorAction() {
-            @Override
-            void delegateToProcessor(MetricProcessor<Object> processor, MetricName name, Object context) throws Exception {
-                processor.processHistogram(name, mock, context);
-            }
-        }));
-    }
+  static Histogram createHistogram() throws Exception {
+    final Histogram mock = mock(Histogram.class);
+    setupSummarizableMock(mock);
+    setupSamplingMock(mock);
+    return configureMatcher(mock, doAnswer(new MetricsProcessorAction() {
+      @Override
+      void delegateToProcessor(MetricProcessor<Object> processor, MetricName name, Object context) throws Exception {
+        processor.processHistogram(name, mock, context);
+      }
+    }));
+  }
 
 
-    static Gauge<Object> createGauge(Object value) throws Exception {
-        @SuppressWarnings("unchecked")
-        final Gauge<Object> mock = mock(Gauge.class);
-        when(mock.value()).thenReturn(value);
-        return configureMatcher(mock, doAnswer(new MetricsProcessorAction() {
-            @Override
-            void delegateToProcessor(MetricProcessor<Object> processor, MetricName name, Object context) throws Exception {
-                processor.processGauge(name, mock, context);
-            }
-        }));
-    }
-
-
-    static Timer createTimer() throws Exception {
-        final Timer mock = mock(Timer.class);
-        when(mock.durationUnit()).thenReturn(TimeUnit.MILLISECONDS);
-        setupSummarizableMock(mock);
-        setupMeteredMock(mock);
-        setupSamplingMock(mock);
-        return configureMatcher(mock, doAnswer(new MetricsProcessorAction() {
-            @Override
-            void delegateToProcessor(MetricProcessor<Object> processor, MetricName name, Object context) throws Exception {
-                processor.processTimer(name, mock, context);
-            }
-        }));
-    }
-
-    static Meter createMeter() throws Exception {
-        final Meter mock = mock(Meter.class);
-        setupMeteredMock(mock);
-        return configureMatcher(mock, doAnswer(new MetricsProcessorAction() {
-            @Override
-            void delegateToProcessor(MetricProcessor<Object> processor, MetricName name, Object context) throws Exception {
-                processor.processMeter(name, mock, context);
-            }
-        }));
-    }
-
+  static Gauge<Object> createGauge(Object value) throws Exception {
     @SuppressWarnings("unchecked")
-    static <T extends Metric> T configureMatcher(T mock, Stubber stub) throws Exception {
-        stub.when(mock).processWith(any(MetricProcessor.class), any(MetricName.class), any());
-        return mock;
+    final Gauge<Object> mock = mock(Gauge.class);
+    when(mock.value()).thenReturn(value);
+    return configureMatcher(mock, doAnswer(new MetricsProcessorAction() {
+      @Override
+      void delegateToProcessor(MetricProcessor<Object> processor, MetricName name, Object context) throws Exception {
+        processor.processGauge(name, mock, context);
+      }
+    }));
+  }
+
+
+  static Timer createTimer() throws Exception {
+    final Timer mock = mock(Timer.class);
+    when(mock.durationUnit()).thenReturn(TimeUnit.MILLISECONDS);
+    setupSummarizableMock(mock);
+    setupMeteredMock(mock);
+    setupSamplingMock(mock);
+    return configureMatcher(mock, doAnswer(new MetricsProcessorAction() {
+      @Override
+      void delegateToProcessor(MetricProcessor<Object> processor, MetricName name, Object context) throws Exception {
+        processor.processTimer(name, mock, context);
+      }
+    }));
+  }
+
+  static Meter createMeter() throws Exception {
+    final Meter mock = mock(Meter.class);
+    setupMeteredMock(mock);
+    return configureMatcher(mock, doAnswer(new MetricsProcessorAction() {
+      @Override
+      void delegateToProcessor(MetricProcessor<Object> processor, MetricName name, Object context) throws Exception {
+        processor.processMeter(name, mock, context);
+      }
+    }));
+  }
+
+  @SuppressWarnings("unchecked")
+  static <T extends Metric> T configureMatcher(T mock, Stubber stub) throws Exception {
+    stub.when(mock).processWith(any(MetricProcessor.class), any(MetricName.class), any());
+    return mock;
+  }
+
+  static abstract class MetricsProcessorAction implements Answer<Object> {
+    @Override
+    public Object answer(InvocationOnMock invocation) throws Throwable {
+      @SuppressWarnings("unchecked")
+      final MetricProcessor<Object> processor = (MetricProcessor<Object>) invocation.getArguments()[0];
+      final MetricName name = (MetricName) invocation.getArguments()[1];
+      final Object context = invocation.getArguments()[2];
+      delegateToProcessor(processor, name, context);
+      return null;
     }
 
-    static abstract class MetricsProcessorAction implements Answer<Object> {
-        @Override
-        public Object answer(InvocationOnMock invocation) throws Throwable {
-            @SuppressWarnings("unchecked")
-            final MetricProcessor<Object> processor = (MetricProcessor<Object>) invocation.getArguments()[0];
-            final MetricName name = (MetricName) invocation.getArguments()[1];
-            final Object context = invocation.getArguments()[2];
-            delegateToProcessor(processor, name, context);
-            return null;
-        }
+    abstract void delegateToProcessor(MetricProcessor<Object> processor, MetricName name, Object context) throws Exception;
+  }
 
-        abstract void delegateToProcessor(MetricProcessor<Object> processor, MetricName name, Object context) throws Exception;
+  static void setupSummarizableMock(Summarizable summarizable) {
+    when(summarizable.min()).thenReturn(1d);
+    when(summarizable.max()).thenReturn(3d);
+    when(summarizable.mean()).thenReturn(2d);
+    when(summarizable.stdDev()).thenReturn(1.5d);
+  }
+
+  static void setupMeteredMock(Metered metered) {
+    when(metered.count()).thenReturn(1L);
+    when(metered.oneMinuteRate()).thenReturn(1d);
+    when(metered.fiveMinuteRate()).thenReturn(5d);
+    when(metered.fifteenMinuteRate()).thenReturn(15d);
+    when(metered.meanRate()).thenReturn(2d);
+    when(metered.eventType()).thenReturn("eventType");
+    when(metered.rateUnit()).thenReturn(TimeUnit.SECONDS);
+  }
+
+  static void setupSamplingMock(Sampling sampling) {
+    final double[] values = new double[1000];
+    for (int i = 0; i < values.length; i++) {
+      values[i] = i / 1000.0;
     }
-
-    static void setupSummarizableMock(Summarizable summarizable) {
-        when(summarizable.min()).thenReturn(1d);
-        when(summarizable.max()).thenReturn(3d);
-        when(summarizable.mean()).thenReturn(2d);
-        when(summarizable.stdDev()).thenReturn(1.5d);
-    }
-
-    static void setupMeteredMock(Metered metered) {
-        when(metered.count()).thenReturn(1L);
-        when(metered.oneMinuteRate()).thenReturn(1d);
-        when(metered.fiveMinuteRate()).thenReturn(5d);
-        when(metered.fifteenMinuteRate()).thenReturn(15d);
-        when(metered.meanRate()).thenReturn(2d);
-        when(metered.eventType()).thenReturn("eventType");
-        when(metered.rateUnit()).thenReturn(TimeUnit.SECONDS);
-    }
-
-    static void setupSamplingMock(Sampling sampling) {
-        final double[] values = new double[1000];
-        for (int i = 0; i < values.length; i++) {
-            values[i] = i / 1000.0;
-        }
-        when(sampling.getSnapshot()).thenReturn(new Snapshot(values));
-    }}
+    when(sampling.getSnapshot()).thenReturn(new Snapshot(values));
+  }
+}
