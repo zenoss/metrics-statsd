@@ -36,6 +36,7 @@ import com.yammer.metrics.stats.Snapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -100,8 +101,20 @@ public class StatsDReporter extends AbstractPollingReporter implements MetricPro
 
   @Override
   public void run() {
-    final long epoch = clock.time() / 1000;
-    printRegularMetrics(epoch);
+    try {
+      statsD.connect();
+      final long epoch = clock.time() / 1000;
+      printRegularMetrics(epoch);
+    } catch (IOException e) {
+      LOG.info("Failed to connect or print metrics to statsd", e);
+    } finally {
+      try {
+        statsD.close();
+      } catch (IOException e) {
+        LOG.info("Failure when closing statsd connection", e);
+      }
+    }
+
   }
 
   protected void printRegularMetrics(long epoch) {

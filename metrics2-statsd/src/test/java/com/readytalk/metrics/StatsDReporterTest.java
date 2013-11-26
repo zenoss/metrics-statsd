@@ -40,6 +40,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.Stubber;
 
+import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -47,6 +48,7 @@ import java.util.concurrent.TimeUnit;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -142,6 +144,20 @@ public class StatsDReporterTest {
 
   public void verifyCounter(long count) {
     verifySend(Long.toString(count));
+  }
+
+  @Test
+  public void exceptionOnConnect() throws IOException {
+    doThrow(new IOException()).when(statsD).connect();
+    reporter.run();
+    verify(statsD, never()).send(anyString(), anyString());
+  }
+
+  @Test
+  public void exceptionOnClose() throws IOException {
+    //Exception should not bubble up.
+    doThrow(new IOException()).when(statsD).close();
+    reporter.run();
   }
 
   @Test
