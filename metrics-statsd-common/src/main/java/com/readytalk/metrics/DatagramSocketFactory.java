@@ -1,6 +1,5 @@
 /**
- * Copyright (C) 2012-2013 Sean Laurent
- * Copyright (C) 2013 Michael Keesey
+ * Copyright (C) 2013 metrics-statsd contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -14,18 +13,20 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package com.bealetech.metrics.reporting;
+package com.readytalk.metrics;
 
-public enum StatType {
-	COUNTER("c"), TIMER("ms"), GAUGE("g");
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
+import java.net.SocketException;
 
-	private final String statsdType;
+public class DatagramSocketFactory {
+  public DatagramSocket createSocket() throws SocketException {
+    return new DatagramSocket();
+  }
 
-	private StatType(String statsdType) {
-		this.statsdType = statsdType;
-	}
-
-	public String statsdType() {
-		return statsdType;
-	}
+  public DatagramPacket createPacket(final byte[] bytes, final int length, final InetSocketAddress address)
+      throws SocketException {
+    return new DatagramPacket(bytes, length, address);
+  }
 }

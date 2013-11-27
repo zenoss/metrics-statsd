@@ -1,3 +1,7 @@
+allprojects {
+  version = '4.0.0-SNAPSHOT'
+}
+
 buildscript {
   repositories {
     maven { url 'http://repo.springsource.org/plugins-release' }

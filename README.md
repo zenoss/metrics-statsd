@@ -6,6 +6,15 @@ StatsD reporter for codahale/metrics. Supports versions 2 and 3.
 
 ```java
 MetricRegistry registry = new MetricRegistry();
+
+// Using metrics2-statsd
+StatsDReporter reporter = new StatsDReporter(registry,
+    "statsd.example.com",
+    8125,
+    "metric.prefix");
+reporter.start(reportIntervalInSec, TimeUnit.SECONDS);
+
+// Using metrics3-statsd
 StatsDReporter.forRegistry(registry)
     .build("statsd.example.com", 8125)
     .start(10, TimeUnit.SECONDS);
@@ -18,7 +27,10 @@ repositories {
   mavenRepo(url: 'http://dl.bintray.com/readytalk/maven')
 }
 
-compile('com.readytalk:metrics3-statsd:3.X.X')
+// for Metrics 2.x
+compile('com.readytalk:metrics2-statsd:4.X.X')
+// for Metrics 3.x
+compile('com.readytalk:metrics3-statsd:4.X.X')
 ```
 
 ## Maven

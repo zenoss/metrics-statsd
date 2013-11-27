@@ -1,6 +1,5 @@
-version = '3.0.0-RC1'
-
 dependencies {
+  compile project(':metrics-statsd-common')
   provided (
     'com.codahale.metrics:metrics-core:3.0.0'
   )
