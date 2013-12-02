@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
@@ -135,16 +134,16 @@ public class StatsDReporter extends AbstractPollingReporter implements MetricPro
   @Override
   public void processMeter(MetricName name, Metered meter, Long epoch) {
     final String sanitizedName = sanitizeName(name);
-    statsD.send(sanitizedName, formatNumber(meter.count()));
-    statsD.send(sanitizedName + ".meanRate", formatNumber(meter.meanRate()));
-    statsD.send(sanitizedName + ".1MinuteRate", formatNumber(meter.oneMinuteRate()));
-    statsD.send(sanitizedName + ".5MinuteRate", formatNumber(meter.fiveMinuteRate()));
-    statsD.send(sanitizedName + ".15MinuteRate", formatNumber(meter.fifteenMinuteRate()));
+    sendToStatsD(sanitizedName, formatNumber(meter.count()));
+    sendToStatsD(sanitizedName + ".meanRate", formatNumber(meter.meanRate()));
+    sendToStatsD(sanitizedName + ".1MinuteRate", formatNumber(meter.oneMinuteRate()));
+    sendToStatsD(sanitizedName + ".5MinuteRate", formatNumber(meter.fiveMinuteRate()));
+    sendToStatsD(sanitizedName + ".15MinuteRate", formatNumber(meter.fifteenMinuteRate()));
   }
 
   @Override
   public void processCounter(MetricName name, Counter counter, Long epoch) {
-    statsD.send(sanitizeName(name), formatNumber(counter.count()));
+    sendToStatsD(sanitizeName(name), formatNumber(counter.count()));
   }
 
   @Override
@@ -166,25 +165,25 @@ public class StatsDReporter extends AbstractPollingReporter implements MetricPro
   public void processGauge(MetricName name, Gauge<?> gauge, Long epoch) {
     String stringValue = format(gauge.value());
     if (stringValue != null) {
-      statsD.send(sanitizeName(name), stringValue);
+      sendToStatsD(sanitizeName(name), stringValue);
     }
   }
 
   protected void sendSummarizable(String sanitizedName, Summarizable metric) {
-    statsD.send(sanitizedName + ".min", formatNumber(metric.min()));
-    statsD.send(sanitizedName + ".max", formatNumber(metric.max()));
-    statsD.send(sanitizedName + ".mean", formatNumber(metric.mean()));
-    statsD.send(sanitizedName + ".stddev", formatNumber(metric.stdDev()));
+    sendToStatsD(sanitizedName + ".min", formatNumber(metric.min()));
+    sendToStatsD(sanitizedName + ".max", formatNumber(metric.max()));
+    sendToStatsD(sanitizedName + ".mean", formatNumber(metric.mean()));
+    sendToStatsD(sanitizedName + ".stddev", formatNumber(metric.stdDev()));
   }
 
   protected void sendSampling(String sanitizedName, Sampling metric) {
     final Snapshot snapshot = metric.getSnapshot();
-    statsD.send(sanitizedName + ".median", formatNumber(snapshot.getMedian()));
-    statsD.send(sanitizedName + ".75percentile", formatNumber(snapshot.get75thPercentile()));
-    statsD.send(sanitizedName + ".95percentile", formatNumber(snapshot.get95thPercentile()));
-    statsD.send(sanitizedName + ".98percentile", formatNumber(snapshot.get98thPercentile()));
-    statsD.send(sanitizedName + ".99percentile", formatNumber(snapshot.get99thPercentile()));
-    statsD.send(sanitizedName + ".999percentile", formatNumber(snapshot.get999thPercentile()));
+    sendToStatsD(sanitizedName + ".median", formatNumber(snapshot.getMedian()));
+    sendToStatsD(sanitizedName + ".75percentile", formatNumber(snapshot.get75thPercentile()));
+    sendToStatsD(sanitizedName + ".95percentile", formatNumber(snapshot.get95thPercentile()));
+    sendToStatsD(sanitizedName + ".98percentile", formatNumber(snapshot.get98thPercentile()));
+    sendToStatsD(sanitizedName + ".99percentile", formatNumber(snapshot.get99thPercentile()));
+    sendToStatsD(sanitizedName + ".999percentile", formatNumber(snapshot.get999thPercentile()));
   }
 
   protected String sanitizeName(MetricName name) {
@@ -198,6 +197,10 @@ public class StatsDReporter extends AbstractPollingReporter implements MetricPro
           .append('.');
     }
     return sb.append(name.getName()).toString();
+  }
+
+  private void sendToStatsD(String metricName, String metricValue) {
+    statsD.send(prefix + metricName, metricValue);
   }
 
   private String format(final Object o) {

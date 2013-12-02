@@ -56,7 +56,7 @@ import static org.mockito.Mockito.when;
 
 public class StatsDReporterTest {
 
-  private static final String METRIC_BASE_NAME = "java.lang.Object.metric";
+  private static final String METRIC_BASE_NAME = "prefix.java.lang.Object.metric";
   @Mock
   private Clock clock;
   @Mock
