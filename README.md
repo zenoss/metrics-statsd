@@ -1,4 +1,4 @@
-# metrics-statsd
+# metrics-statsd [![Build Status](https://travis-ci.org/ReadyTalk/metrics-statsd.png?branch=master)](https://travis-ci.org/ReadyTalk/metrics-statsd)
 
 StatsD reporter for codahale/metrics. Supports versions 2 and 3.
 
