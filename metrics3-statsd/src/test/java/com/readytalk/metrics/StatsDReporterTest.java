@@ -46,6 +46,9 @@ public class StatsDReporterTest {
       .filter(MetricFilter.ALL)
       .build(statsD);
 
+  @SuppressWarnings("rawtypes") //Metrics library specifies the raw Gauge type unfortunately
+  private final SortedMap<String, Gauge> emptyGaugeMap = new TreeMap<String, Gauge>();
+
   @Test
   public void doesNotReportStringGaugeValues() throws Exception {
     reporter.report(map("gauge", gauge("value")), this.<Counter>map(), this.<Histogram>map(), this.<Meter>map(),
@@ -128,7 +131,7 @@ public class StatsDReporterTest {
     final Counter counter = mock(Counter.class);
     when(counter.getCount()).thenReturn(100L);
 
-    reporter.report(this.<Gauge>map(), this.<Counter>map("counter", counter), this.<Histogram>map(),
+    reporter.report(emptyGaugeMap, this.<Counter>map("counter", counter), this.<Histogram>map(),
         this.<Meter>map(), this.<Timer>map());
 
     final InOrder inOrder = inOrder(statsD);
@@ -156,7 +159,7 @@ public class StatsDReporterTest {
 
     when(histogram.getSnapshot()).thenReturn(snapshot);
 
-    reporter.report(this.<Gauge>map(), this.<Counter>map(), this.<Histogram>map("histogram", histogram),
+    reporter.report(emptyGaugeMap, this.<Counter>map(), this.<Histogram>map("histogram", histogram),
         this.<Meter>map(), this.<Timer>map());
 
     final InOrder inOrder = inOrder(statsD);
@@ -186,7 +189,7 @@ public class StatsDReporterTest {
     when(meter.getFifteenMinuteRate()).thenReturn(4.0);
     when(meter.getMeanRate()).thenReturn(5.0);
 
-    reporter.report(this.<Gauge>map(), this.<Counter>map(), this.<Histogram>map(), this.<Meter>map("meter", meter),
+    reporter.report(emptyGaugeMap, this.<Counter>map(), this.<Histogram>map(), this.<Meter>map("meter", meter),
         this.<Timer>map());
 
     final InOrder inOrder = inOrder(statsD);
@@ -224,7 +227,7 @@ public class StatsDReporterTest {
 
     when(timer.getSnapshot()).thenReturn(snapshot);
 
-    reporter.report(this.<Gauge>map(), this.<Counter>map(), this.<Histogram>map(), this.<Meter>map(),
+    reporter.report(emptyGaugeMap, this.<Counter>map(), this.<Histogram>map(), this.<Meter>map(),
         map("timer", timer));
 
     final InOrder inOrder = inOrder(statsD);
@@ -245,8 +248,6 @@ public class StatsDReporterTest {
     verify(statsD).send("prefix.timer.m15_rate", "5.00");
     inOrder.verify(statsD).send("prefix.timer.mean_rate", "2.00");
     inOrder.verify(statsD).close();
-
-
   }
 
   private <T> SortedMap<String, T> map() {
@@ -259,6 +260,7 @@ public class StatsDReporterTest {
     return map;
   }
 
+  @SuppressWarnings("rawtypes")
   private <T> Gauge gauge(T value) {
     final Gauge gauge = mock(Gauge.class);
     when(gauge.getValue()).thenReturn(value);
