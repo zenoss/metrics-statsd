@@ -161,6 +161,7 @@ public class StatsDReporter extends ScheduledReporter {
 
 
   @Override
+  @SuppressWarnings("rawtypes") //Metrics 3.0 interface specifies the raw Gauge type
   public void report(final SortedMap<String, Gauge> gauges,
                      final SortedMap<String, Counter> counters,
                      final SortedMap<String, Histogram> histograms,
@@ -244,6 +245,7 @@ public class StatsDReporter extends ScheduledReporter {
     statsD.send(prefix(name), formatNumber(counter.getCount()));
   }
 
+  @SuppressWarnings("rawtypes") //Metrics 3.0 passes us the raw Gauge type
   private void reportGauge(final String name, final Gauge gauge) {
     final String value = format(gauge.getValue());
     if (value != null) {
