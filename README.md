@@ -28,9 +28,9 @@ repositories {
 }
 
 // for Metrics 2.x
-compile('com.readytalk:metrics2-statsd:4.0.0-RC1')
+compile('com.readytalk:metrics2-statsd:4.0.0')
 // for Metrics 3.x
-compile('com.readytalk:metrics3-statsd:4.0.0-RC1')
+compile('com.readytalk:metrics3-statsd:4.0.0')
 ```
 
 ## Maven
