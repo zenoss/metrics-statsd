@@ -104,7 +104,7 @@ public class StatsDReporterTest {
   }
 
   public void verifyTimer() {
-    verifySend("1");
+    verifySend("samples", "1");
     verifySend("meanRate", "2.00");
     verifySend("1MinuteRate", "1.00");
     verifySend("5MinuteRate", "5.00");
@@ -122,7 +122,7 @@ public class StatsDReporterTest {
   }
 
   public void verifyMeter() {
-    verifySend("1");
+    verifySend("samples", "1");
     verifySend("meanRate", "2.00");
     verifySend("1MinuteRate", "1.00");
     verifySend("5MinuteRate", "5.00");

@@ -134,7 +134,7 @@ public class StatsDReporter extends AbstractPollingReporter implements MetricPro
   @Override
   public void processMeter(MetricName name, Metered meter, Long epoch) {
     final String sanitizedName = sanitizeName(name);
-    sendToStatsD(sanitizedName, formatNumber(meter.count()));
+    sendToStatsD(sanitizedName + ".samples", formatNumber(meter.count()));
     sendToStatsD(sanitizedName + ".meanRate", formatNumber(meter.meanRate()));
     sendToStatsD(sanitizedName + ".1MinuteRate", formatNumber(meter.oneMinuteRate()));
     sendToStatsD(sanitizedName + ".5MinuteRate", formatNumber(meter.fiveMinuteRate()));

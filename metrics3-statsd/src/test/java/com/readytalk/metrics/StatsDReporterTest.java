@@ -165,7 +165,7 @@ public class StatsDReporterTest {
     final InOrder inOrder = inOrder(statsD);
 
     inOrder.verify(statsD).connect();
-    verify(statsD).send("prefix.histogram", "1");
+    verify(statsD).send("prefix.histogram.samples", "1");
     verify(statsD).send("prefix.histogram.max", "2");
     verify(statsD).send("prefix.histogram.mean", "3.00");
     verify(statsD).send("prefix.histogram.min", "4");
@@ -194,7 +194,7 @@ public class StatsDReporterTest {
 
     final InOrder inOrder = inOrder(statsD);
     inOrder.verify(statsD).connect();
-    verify(statsD).send("prefix.meter", "1");
+    verify(statsD).send("prefix.meter.samples", "1");
     verify(statsD).send("prefix.meter.m1_rate", "2.00");
     verify(statsD).send("prefix.meter.m5_rate", "3.00");
     verify(statsD).send("prefix.meter.m15_rate", "4.00");
@@ -242,7 +242,7 @@ public class StatsDReporterTest {
     verify(statsD).send("prefix.timer.p98", "800.00");
     verify(statsD).send("prefix.timer.p99", "900.00");
     verify(statsD).send("prefix.timer.p999", "1000.00");
-    verify(statsD).send("prefix.timer", "1");
+    verify(statsD).send("prefix.timer.samples", "1");
     verify(statsD).send("prefix.timer.m1_rate", "3.00");
     verify(statsD).send("prefix.timer.m5_rate", "4.00");
     verify(statsD).send("prefix.timer.m15_rate", "5.00");
