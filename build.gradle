@@ -96,8 +96,8 @@ subprojects {
   }
 
   bintray {
-    user = bintrayUser
-    key = bintrayKey
+    user = System.getenv("BINTRAY_USER") ?: bintrayUser
+    key = System.getenv("BINTRAY_KEY") ?: bintrayKey
     configurations = ['archives']
     pkg {
       userOrg = 'readytalk'
