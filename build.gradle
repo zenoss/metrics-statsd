@@ -93,6 +93,10 @@ subprojects {
     }
   }
 
+  artifacts {
+    archives sourceJar
+  }
+
   jacocoTestReport.dependsOn test
   build.dependsOn javadoc, jacocoTestReport
 }
