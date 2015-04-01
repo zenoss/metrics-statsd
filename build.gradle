@@ -3,7 +3,8 @@ buildscript {
     maven { url 'http://repo.springsource.org/plugins-release' }
   }
   dependencies {
-    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.3'
+    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
+    classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:0.6"
   }
 }
 
@@ -22,6 +23,7 @@ subprojects {
     apply 'propdeps-maven'
     apply 'propdeps-idea'
     apply 'propdeps-eclipse'
+    apply 'com.jfrog.bintray'
   }
   
   group = 'com.readytalk'
@@ -52,8 +54,8 @@ subprojects {
   sourceCompatibility = 1.6
   targetCompatibility = 1.6
 
-  tasks.withType(Compile) { 
-    options.compilerArgs << "-Xlint:all" 
+  tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:all"
   }
 
   task sourceJar(type: Jar) {
@@ -93,6 +95,17 @@ subprojects {
     }
   }
 
+  bintray {
+    user = bintrayUser
+    key = bintrayKey
+    configurations = ['archives']
+    pkg {
+      userOrg = 'readytalk'
+      repo = 'maven'
+      name = 'metrics-statsd'
+    }
+  }
+
   artifacts {
     archives sourceJar
   }
@@ -102,6 +115,5 @@ subprojects {
 }
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '1.6'
+  gradleVersion = '2.3'
 }
-
