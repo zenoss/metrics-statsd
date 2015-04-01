@@ -1,6 +1,6 @@
 ## Publishing to Bintray
 
-Add your user and API key to `~/.gradle/gradle.properties'`
+Add your user and API key to `~/.gradle/gradle.properties`
 
     bintrayUser=myuser
     bintrayKey=myapikey
