@@ -24,7 +24,7 @@ StatsDReporter.forRegistry(registry)
 
 ```groovy
 repositories {
-  mavenRepo(url: 'http://dl.bintray.com/readytalk/maven')
+    jcenter()
 }
 
 // for Metrics 2.x
