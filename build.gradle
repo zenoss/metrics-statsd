@@ -11,38 +11,38 @@ buildscript {
 defaultTasks 'build'
 
 subprojects {
-  
+
   plugins.with {
     apply 'java'
     apply 'maven-publish'
     apply 'checkstyle'
     apply 'findbugs'
     apply 'jacoco'
-    
+
     apply 'propdeps'
     apply 'propdeps-maven'
     apply 'propdeps-idea'
     apply 'propdeps-eclipse'
     apply 'com.jfrog.bintray'
   }
-  
+
   group = 'com.readytalk'
   description = 'Metrics StatsD Support'
 
   repositories {
     mavenCentral()
   }
-  
+
   dependencies {
     compile (
       'org.slf4j:slf4j-api:1.7.5',
     )
-  
+
     optional (
       'com.google.code.findbugs:jsr305:2.0.1',
       'com.google.code.findbugs:annotations:2.0.1',
     )
-  
+
     testCompile (
       'junit:junit:4.11',
       'org.mockito:mockito-all:1.9.5',
@@ -70,7 +70,7 @@ subprojects {
   }
 
   findbugs {
-    toolVersion = '2.0.1'
+    toolVersion = System.getProperty('java.version').startsWith('1.6') ? '2.0.1' : '3.0.1'
     sourceSets = [sourceSets.main]
     ignoreFailures = true
   }
@@ -80,9 +80,9 @@ subprojects {
       html.enabled = true
       csv.enabled = true
       xml.enabled = true
-    } 
+    }
   }
-  
+
   publishing {
     publications {
       mavenJava(MavenPublication) {
@@ -115,5 +115,5 @@ subprojects {
 }
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '2.3'
+  gradleVersion = '2.8'
 }
