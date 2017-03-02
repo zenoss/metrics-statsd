@@ -2,6 +2,6 @@ language: java
 before_install:
     - export TERM=dumb
 jdk:
-    - openjdk6
     - openjdk7
     - oraclejdk7
+    - oraclejdk8
