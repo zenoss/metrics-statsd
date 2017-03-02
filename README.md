@@ -2,6 +2,8 @@
 
 StatsD reporter for codahale/metrics. Supports versions 2 and 3.
 
+Requires Java 7+
+
 ## Quick Start
 
 ```java
