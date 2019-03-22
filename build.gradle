@@ -114,6 +114,6 @@ subprojects {
   build.dependsOn javadoc, jacocoTestReport
 }
 
-task wrapper(type: Wrapper) {
-  gradleVersion = '2.8'
-}
+// task wrapper(type: Wrapper) {
+//   gradleVersion = '2.8'
+// }
